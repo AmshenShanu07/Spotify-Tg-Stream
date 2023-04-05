@@ -1,0 +1,6 @@
+__pycache__
+test
+**.session**
+*.mp3
+unknown_errors.txt
+test.**
