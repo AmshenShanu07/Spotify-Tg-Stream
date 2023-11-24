@@ -1,7 +1,9 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 class Config(object):
-    API_ID = os.environ.get("API_ID",'')
-    API_HASH = os.environ.get("API_HASH",'')
-    BOT_TOKEN = os.environ.get('BOT_TOKEN','')
-    BOT_USERNAME = os.environ.get('','')
+    API_ID = os.getenv("API_ID",'')
+    API_HASH = os.getenv("API_HASH",'')
+    SESSION_STRING = os.getenv("SESSION_STRING",'')

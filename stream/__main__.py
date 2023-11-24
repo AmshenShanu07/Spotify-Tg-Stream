@@ -76,6 +76,8 @@ async def play_handler(bot:Client, event:Message):
     except GroupCallNotFound:
         await event.reply(text="Stream Not Found!")
         await event.delete()
+    except ntgcalls.ConnectionNotFound:
+        start_handler(bot,event)
 
 
 
@@ -136,6 +138,6 @@ async def onStreamEnd(bot:Client,event:Update):
     await app.send_message(event.chat_id,text=f"Now Playing...\n\n{song}")
     time.sleep(3)
     await tgCall.change_stream(event.chat_id,stream=AudioPiped(f'././songs/playlist/{song}'))
-
+        
 
 tgCall.run()

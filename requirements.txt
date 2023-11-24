@@ -2,4 +2,5 @@ Pyrogram==1.2.9
 requests==2.22.0
 TgCrypto==1.2.2
 py-tgcalls==0.9.7
-youtube-dl==2021.12.17
+python-dotenv===1.0.0
+spotdl===4.2.2

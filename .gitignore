@@ -4,3 +4,5 @@ test
 *.mp3
 unknown_errors.txt
 test.**
+
+.env
