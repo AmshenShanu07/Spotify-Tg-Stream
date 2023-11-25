@@ -4,6 +4,7 @@ from pytgcalls.types import Update
 from pyrogram import Client, filters
 from pytgcalls.types import AudioPiped
 from pytgcalls.exceptions import NoActiveGroupCall, NotInGroupCallError, GroupCallNotFound
+import ntgcalls
 
 import os
 import time
@@ -17,10 +18,16 @@ global userFilter
 
 sudo_users = [885866704, 6102667313, 1209597031]
 
+async def playRandomSong(event:Message):
+    downloaded_songs = os.listdir('./songs/playlist')
+    song = random.choice(downloaded_songs)
+    await event.reply(f"Now Playing...🎶\n\n{song}")
+    time.sleep(3)
+    await tgCall.change_stream(event.chat.id,stream=AudioPiped(f'././songs/playlist/{song}'))
 
 # 6102667313
 # 885866704
-@app.on_message(filters.group & filters.user(sudo_users) & filters.command("start"))
+@app.on_message(filters.group & filters.user(sudo_users) & filters.command("start", prefixes="."))
 async def start_handler(bot:Client,event:Message):
     try:
         await tgCall.join_group_call(event.chat.id, stream=AudioPiped('./song.mp3'))
@@ -37,31 +44,32 @@ async def start_handler(bot:Client,event:Message):
 
 
 # -1001938777292
-@app.on_message(filters.group & filters.user(sudo_users) & filters.command("play"))
+@app.on_message(filters.group & filters.user(sudo_users) & filters.command("play", prefixes="."))
 async def play_handler(bot:Client, event:Message):
     try:
-        songIndex = int(event.text.replace('/play ',''))
+        songIndex = event.text.replace('.play ','')
         downloaded_songs = os.listdir('./songs/playlist')
+
+
+        if songIndex.isnumeric() == False:
+            await playRandomSong(event)
+            return
 
         songsList = os.listdir('./songs/playlist')
         songsList = [song.split(' - ')[1] for song in songsList]
         songsList.sort()
 
         for i in range(len(downloaded_songs)):
-            if songsList[songIndex-1] in downloaded_songs[i]:
+            if songsList[int(songIndex)-1] in downloaded_songs[i]:
                 index = i;
         
         time.sleep(3)
-        await event.reply(f"Now Playing...\n\n{downloaded_songs[index]}")
+        await event.reply(f"Now Playing...🎶\n\n{downloaded_songs[index]}")
         await tgCall.resume_stream(event.chat.id)
         await tgCall.change_stream(event.chat.id,stream=AudioPiped(f'./songs/playlist/{downloaded_songs[index]}'))
     
     except ValueError:
-        downloaded_songs = os.listdir('./songs/playlist')
-        song = random.choice(downloaded_songs)
-        await event.reply(event.chat_id,text=f"Now Playing...\n\n{song}")
-        time.sleep(3)
-        await tgCall.change_stream(event.chat_id,stream=AudioPiped(f'././songs/playlist/{song}'))
+        await playRandomSong(event)
 
     except NoActiveGroupCall:
         await event.reply(text="Have no permission in this chat!")
@@ -77,15 +85,19 @@ async def play_handler(bot:Client, event:Message):
         await event.reply(text="Stream Not Found!")
         await event.delete()
     except ntgcalls.ConnectionNotFound:
-        start_handler(bot,event)
+        await tgCall.join_group_call(event.chat.id, stream=AudioPiped('./song.mp3'))
+        await tgCall.change_volume_call(event.chat.id,100)
+        await tgCall.pause_stream(event.chat.id)
+        await playRandomSong(event)
+      
 
 
 
-@app.on_message(filters.group & filters.user(sudo_users) & filters.command("download"))
+@app.on_message(filters.group & filters.user(sudo_users) & filters.command("download", prefixes="."))
 async def download_song(bot:Client, event:Message):
-    url = event.text.replace('/download ','')
+    url = event.text.replace('.download ','')
 
-    if url == '/download':
+    if url == '.download':
         await event.reply("plzz provide a url")
         return
     
@@ -95,7 +107,7 @@ async def download_song(bot:Client, event:Message):
     
 
 
-@app.on_message(filters.group & filters.user(sudo_users) & filters.command("songs"))
+@app.on_message(filters.group & filters.user(sudo_users) & filters.command("songs", prefixes="."))
 async def get_all_songs(bot:Client,event:Message):
     songsList = os.listdir('./songs/playlist')
     songsList =[song.split(' - ')[1] for song in songsList]
@@ -109,22 +121,22 @@ async def get_all_songs(bot:Client,event:Message):
 
 
 
-@app.on_message(filters.group & filters.user(sudo_users) & filters.command("stop"))
+@app.on_message(filters.group & filters.user(sudo_users) & filters.command("stop", prefixes="."))
 async def get_details(bot:Client,event:Message):
     await tgCall.leave_group_call(event.chat.id)
-    await event.reply("Stream Stopped Successfully!")
+    await event.reply("Stream Stopped Successfully🛑!")
 
 
 
 
-@app.on_message(filters.command("sudo") & filters.me)
+@app.on_message(filters.command("sudo", prefixes=".") & filters.me)
 async def get_details(bot:Client,event:Message):
     if(event.reply_to_message):
         print(event.reply_to_message.from_user.id)
 
 
 
-@app.on_message(filters.command("getsudo"))
+@app.on_message(filters.command("getsudo", prefixes="."))
 async def get_details(bot:Client,event:Message):
     msg = "\n\n bla  bla \n\n bla"
     await event.reply(msg)
@@ -135,7 +147,7 @@ async def get_details(bot:Client,event:Message):
 async def onStreamEnd(bot:Client,event:Update):
     downloaded_songs = os.listdir('./songs/playlist')
     song = random.choice(downloaded_songs)
-    await app.send_message(event.chat_id,text=f"Now Playing...\n\n{song}")
+    await app.send_message(event.chat_id,text=f"Now Playing...🎶\n\n{song}")
     time.sleep(3)
     await tgCall.change_stream(event.chat_id,stream=AudioPiped(f'././songs/playlist/{song}'))
         
